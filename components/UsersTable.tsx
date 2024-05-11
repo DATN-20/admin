@@ -1,7 +1,12 @@
 "use client";
 import { Button, Table, Modal, Input } from "antd";
 import { useState } from "react";
-import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import {
+  EditOutlined,
+  DeleteOutlined,
+  StopOutlined,
+  UnlockOutlined,
+} from "@ant-design/icons";
 import { ColumnType } from "antd/es/table";
 
 interface User {
@@ -9,6 +14,7 @@ interface User {
   name: string;
   email: string;
   times: string;
+  status: string;
 }
 
 function UsersTable() {
@@ -20,24 +26,28 @@ function UsersTable() {
       name: "John",
       email: "john@gmail.com",
       times: "10",
+      status: "active",
     },
     {
       id: 2,
       name: "David",
       email: "david@gmail.com",
       times: "10",
+      status: "banned",
     },
     {
       id: 3,
       name: "James",
       email: "james@gmail.com",
       times: "10",
+      status: "active",
     },
     {
       id: 4,
       name: "Sam",
       email: "sam@gmail.com",
       times: "10",
+      status: "active",
     },
   ]);
 
@@ -71,7 +81,26 @@ function UsersTable() {
       sortDirections: ["descend", "ascend"],
     },
     {
-      key: "5",
+      key: "5", // Key mới
+      title: "Status", // Tiêu đề cột
+      dataIndex: "status", // Trường dữ liệu
+      render: (text: string) => {
+        return (
+          <span
+            style={{
+              background: text === "active" ? "green" : "red",
+              padding: "3px 10px",
+              borderRadius: 15,
+              color: "white",
+            }}
+          >
+            {text.toUpperCase()}
+          </span>
+        );
+      },
+    },
+    {
+      key: "6",
       title: "Actions",
       render: (record: User) => {
         return (
@@ -82,6 +111,22 @@ function UsersTable() {
                 onEditUser(record);
               }}
             />
+            {record.status === "active" ? (
+              <StopOutlined
+                onClick={() => {
+                  onToggleStatus(record);
+                }}
+                style={{ color: "red", marginLeft: 12, fontSize: 24 }}
+                rotate={90}
+              />
+            ) : (
+              <UnlockOutlined
+                onClick={() => {
+                  onToggleStatus(record);
+                }}
+                style={{ color: "green", marginLeft: 12, fontSize: 24 }}
+              />
+            )}
             <DeleteOutlined
               onClick={() => {
                 onDeleteUser(record);
@@ -103,6 +148,18 @@ function UsersTable() {
     //   address: "Address " + randomNumber,
     // };
     // setDataSource((prev) => [...prev, newUser]);
+  };
+  const onToggleStatus = (record: User) => {
+    const updatedDataSource = dataSource.map((user) => {
+      if (user.id === record.id) {
+        return {
+          ...user,
+          status: user.status === "active" ? "banned" : "active",
+        };
+      }
+      return user;
+    });
+    setDataSource(updatedDataSource);
   };
 
   const onDeleteUser = (record: User) => {
@@ -132,49 +189,70 @@ function UsersTable() {
         <div className="mb-10 font-bold text-3xl">Total users</div>
         <Table columns={columns} dataSource={dataSource}></Table>
         <Modal
-          title="Edit User"
           open={isEditing}
           okText="Save"
           onCancel={() => {
             resetEditing();
           }}
-          onOk={() => {
-            setDataSource((prev) =>
-              prev.map((User) => {
-                if (User.id === editingUser!.id) {
-                  return editingUser!;
-                } else {
-                  return User;
-                }
-              })
-            );
-            resetEditing();
+          // Thêm prop okButtonProps để tùy chỉnh nút OK
+          okButtonProps={{
+            // Sử dụng Modal.confirm của Ant Design khi nút OK được bấm
+            onClick: () => {
+              Modal.confirm({
+                title: "Are you sure you want to save changes?",
+                okText: "Yes",
+                okType: "primary",
+                cancelText: "No",
+                onOk: () => {
+                  setDataSource((prev) =>
+                    prev.map((user) => {
+                      if (user.id === editingUser!.id) {
+                        return editingUser!;
+                      } else {
+                        return user;
+                      }
+                    })
+                  );
+                  resetEditing();
+                },
+              });
+            },
           }}
         >
-          <Input
-            value={editingUser?.name}
-            onChange={(e) => {
-              setEditingUser((prev) => ({ ...prev!, name: e.target.value }));
-            }}
-          />
-          <Input
-            value={editingUser?.email}
-            onChange={(e) => {
-              setEditingUser((prev) => ({
-                ...prev!,
-                email: e.target.value,
-              }));
-            }}
-          />
-          <Input
-            value={editingUser?.times}
-            onChange={(e) => {
-              setEditingUser((prev) => ({
-                ...prev!,
-                address: e.target.value,
-              }));
-            }}
-          />
+          <div className="font-bold text-3xl text-center">Edit user</div>
+          <div className="mb-4">
+            <label className="block mb-2 font-bold">Name:</label>
+            <Input
+              value={editingUser?.name}
+              onChange={(e) => {
+                setEditingUser((prev) => ({ ...prev!, name: e.target.value }));
+              }}
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block mb-2 font-bold">Email:</label>
+            <Input
+              value={editingUser?.email}
+              onChange={(e) => {
+                setEditingUser((prev) => ({
+                  ...prev!,
+                  email: e.target.value,
+                }));
+              }}
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block mb-2 font-bold">Generation times:</label>
+            <Input
+              value={editingUser?.times}
+              onChange={(e) => {
+                setEditingUser((prev) => ({
+                  ...prev!,
+                  times: e.target.value,
+                }));
+              }}
+            />
+          </div>
         </Modal>
       </header>
     </div>
