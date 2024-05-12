@@ -13,6 +13,7 @@ interface Generation {
   id: number;
   prompt: string;
   username: string;
+  type: string;
 }
 
 function GenerationsTable() {
@@ -25,21 +26,25 @@ function GenerationsTable() {
       id: 1,
       prompt: "Prompt 1",
       username: "John",
+      type: "Image to image",
     },
     {
       id: 2,
       prompt: "Prompt 2",
       username: "David",
+      type: "Text to image",
     },
     {
       id: 3,
       prompt: "Prompt 3",
       username: "James",
+      type: "By style",
     },
     {
       id: 4,
       prompt: "Prompt 4",
       username: "Sam",
+      type: "Text to image",
     },
   ]);
 
@@ -66,9 +71,13 @@ function GenerationsTable() {
         a.username.localeCompare(b.username),
       sortDirections: ["descend", "ascend"],
     },
-
     {
       key: "4",
+      title: "Type", // Tiêu đề cột mới
+      dataIndex: "type", // Trường dữ liệu mới
+    },
+    {
+      key: "5",
       title: "Actions",
       render: (record: Generation) => {
         return (

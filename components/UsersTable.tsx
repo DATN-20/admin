@@ -1,5 +1,5 @@
 "use client";
-import { Button, Table, Modal, Input } from "antd";
+import { Button, Table, Modal, Input, Select } from "antd";
 import { useState } from "react";
 import {
   EditOutlined,
@@ -13,7 +13,7 @@ interface User {
   id: number;
   name: string;
   email: string;
-  times: string;
+  request: string;
   status: string;
 }
 
@@ -25,28 +25,28 @@ function UsersTable() {
       id: 1,
       name: "John",
       email: "john@gmail.com",
-      times: "10",
+      request: "10",
       status: "active",
     },
     {
       id: 2,
       name: "David",
       email: "david@gmail.com",
-      times: "10",
+      request: "10",
       status: "banned",
     },
     {
       id: 3,
       name: "James",
       email: "james@gmail.com",
-      times: "10",
+      request: "10",
       status: "active",
     },
     {
       id: 4,
       name: "Sam",
       email: "sam@gmail.com",
-      times: "10",
+      request: "10",
       status: "active",
     },
   ]);
@@ -75,9 +75,9 @@ function UsersTable() {
     },
     {
       key: "4",
-      title: "Generation times",
-      dataIndex: "times",
-      sorter: (a: User, b: User) => parseInt(a.times) - parseInt(b.times),
+      title: "Generation request",
+      dataIndex: "request",
+      sorter: (a: User, b: User) => parseInt(a.request) - parseInt(b.request),
       sortDirections: ["descend", "ascend"],
     },
     {
@@ -150,14 +150,69 @@ function UsersTable() {
     // setDataSource((prev) => [...prev, newUser]);
   };
   const onToggleStatus = (record: User) => {
-    const updatedDataSource = dataSource.map((user) => {
-      if (user.id === record.id) {
+    if (record.status === "active") {
+      // Nếu là active thì hiện modal chọn thời gian ban
+      Modal.confirm({
+        title: "Select ban duration",
+        content: (
+          <Select
+            defaultValue="1"
+            style={{ width: 300 }}
+            onChange={(value) => {
+              banUser(record, value);
+            }}
+          >
+            <Select.Option value="1">1 day</Select.Option>
+            <Select.Option value="7">1 week</Select.Option>
+            <Select.Option value="30">1 month</Select.Option>
+
+            {/* Thêm các option khác nếu cần */}
+          </Select>
+        ),
+        okText: "Ban",
+        okType: "danger",
+        cancelText: "Cancel",
+      });
+    } else {
+      // Nếu là banned thì chỉ cần unban mà không cần chọn thời gian
+      Modal.confirm({
+        title: "Are you sure you want to unban this User?",
+        okText: "Yes",
+        okType: "primary",
+        cancelText: "No",
+        onOk: () => {
+          unbanUser(record);
+        },
+      });
+    }
+  };
+
+  const banUser = (user: User, duration: string) => {
+    // Cập nhật thông tin người dùng và thời gian ban
+    const updatedDataSource = dataSource.map((u) => {
+      if (u.id === user.id) {
         return {
-          ...user,
-          status: user.status === "active" ? "banned" : "active",
+          ...u,
+          status: "banned",
+          banDuration: duration,
         };
       }
-      return user;
+      return u;
+    });
+    setDataSource(updatedDataSource);
+  };
+
+  const unbanUser = (user: User) => {
+    // Chỉ cần cập nhật trạng thái của người dùng là active
+    const updatedDataSource = dataSource.map((u) => {
+      if (u.id === user.id) {
+        return {
+          ...u,
+          status: "active",
+          banDuration: undefined, // Xóa thông tin thời gian ban khi unban
+        };
+      }
+      return u;
     });
     setDataSource(updatedDataSource);
   };
@@ -242,9 +297,9 @@ function UsersTable() {
             />
           </div>
           <div className="mb-4">
-            <label className="block mb-2 font-bold">Generation times:</label>
+            <label className="block mb-2 font-bold">Generation request:</label>
             <Input
-              value={editingUser?.times}
+              value={editingUser?.request}
               onChange={(e) => {
                 setEditingUser((prev) => ({
                   ...prev!,
