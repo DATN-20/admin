@@ -165,6 +165,8 @@ function UsersTable() {
             <Select.Option value="1">1 day</Select.Option>
             <Select.Option value="7">1 week</Select.Option>
             <Select.Option value="30">1 month</Select.Option>
+            <Select.Option value="365">1 year</Select.Option>
+            <Select.Option value="999">Permanent</Select.Option>
 
             {/* Thêm các option khác nếu cần */}
           </Select>
