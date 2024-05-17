@@ -5,6 +5,7 @@ import {
   UserOutlined,
   HighlightOutlined,
   LogoutOutlined,
+  SolutionOutlined,
 } from "@ant-design/icons";
 
 const Sidebar = () => {
@@ -57,6 +58,17 @@ const Sidebar = () => {
               />
               <span className="text-md font-semibold text-gray-800 ml-2">
                 Generations
+              </span>
+            </div>
+          </Link>
+          <Link href="/logs">
+            <div className="flex items-center py-2 cursor-pointer hover:bg-gray-100">
+              <SolutionOutlined
+                className="icon text-purple-600"
+                style={{ fontSize: "32px", marginRight: 10 }}
+              />
+              <span className="text-md font-semibold text-gray-800 ml-2">
+                Logs Monitoring
               </span>
             </div>
           </Link>
