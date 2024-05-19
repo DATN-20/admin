@@ -73,8 +73,8 @@ function GenerationsTable() {
     },
     {
       key: "4",
-      title: "Type", // Tiêu đề cột mới
-      dataIndex: "type", // Trường dữ liệu mới
+      title: "Type",
+      dataIndex: "type",
     },
     {
       key: "5",

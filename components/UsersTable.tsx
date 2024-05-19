@@ -1,6 +1,6 @@
 "use client";
 import { Button, Table, Modal, Input, Select } from "antd";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   EditOutlined,
   DeleteOutlined,
@@ -11,96 +11,123 @@ import { ColumnType } from "antd/es/table";
 
 interface User {
   id: number;
-  name: string;
-  email: string;
-  request: string;
+  first_name: string;
+  last_name: string;
+  alias_name: string | null;
+  role: string | null;
   status: string;
 }
+
+const apiData = {
+  limit: 9007199254740991,
+  page: 0,
+  total: 2,
+  data: [
+    {
+      user: {
+        id: 5,
+        first_name: "Hao",
+        last_name: "Truong",
+        phone: null,
+        address: null,
+        description: null,
+        socials: null,
+        alias_name: "Hao_Truong",
+        role: "ADMIN",
+        avatar: null,
+        background: null,
+        created_at: "2024-02-03T22:48:23.000Z",
+        updated_at: "2024-05-18T03:35:34.000Z",
+      },
+      locked_information: null,
+    },
+    {
+      user: {
+        id: 6,
+        first_name: "Thanh",
+        last_name: "Le",
+        phone: null,
+        address: null,
+        description: null,
+        socials: null,
+        alias_name: "Thanh_le",
+        role: "USER",
+        avatar: null,
+        background: null,
+        created_at: "2024-05-05T22:48:23.000Z",
+        updated_at: "2024-05-05T22:48:23.000Z",
+      },
+      locked_information: null,
+    },
+  ],
+};
 
 function UsersTable() {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [dataSource, setDataSource] = useState<User[]>([
-    {
-      id: 1,
-      name: "John",
-      email: "john@gmail.com",
-      request: "10",
+  const [dataSource, setDataSource] = useState<User[]>([]);
+
+  useEffect(() => {
+    const transformedData = apiData.data.map((item) => ({
+      id: item.user.id,
+      first_name: item.user.first_name,
+      last_name: item.user.last_name,
+      alias_name: item.user.alias_name,
+      role: item.user.role,
       status: "active",
-    },
-    {
-      id: 2,
-      name: "David",
-      email: "david@gmail.com",
-      request: "10",
-      status: "banned",
-    },
-    {
-      id: 3,
-      name: "James",
-      email: "james@gmail.com",
-      request: "10",
-      status: "active",
-    },
-    {
-      id: 4,
-      name: "Sam",
-      email: "sam@gmail.com",
-      request: "10",
-      status: "active",
-    },
-  ]);
+    }));
+    setDataSource(transformedData);
+  }, []);
 
   const columns: ColumnType<User>[] = [
     {
-      key: "1",
+      key: "id",
       title: "ID",
       dataIndex: "id",
     },
-
     {
-      key: "2",
-      title: "Name",
-      dataIndex: "name",
-      sorter: (a: User, b: User) => a.name.localeCompare(b.name),
-      sortDirections: ["descend", "ascend"],
-      render: (text: string) => <a>{text}</a>,
-    },
-    {
-      key: "3",
-      title: "Email",
-      dataIndex: "email",
-      sorter: (a: User, b: User) => a.email.localeCompare(b.email),
+      key: "first_name",
+      title: "First Name",
+      dataIndex: "first_name",
+      sorter: (a: User, b: User) => a.first_name.localeCompare(b.first_name),
       sortDirections: ["descend", "ascend"],
     },
     {
-      key: "4",
-      title: "Generation request",
-      dataIndex: "request",
-      sorter: (a: User, b: User) => parseInt(a.request) - parseInt(b.request),
+      key: "last_name",
+      title: "Last Name",
+      dataIndex: "last_name",
+      sorter: (a: User, b: User) => a.last_name.localeCompare(b.last_name),
       sortDirections: ["descend", "ascend"],
     },
     {
-      key: "5", // Key mới
-      title: "Status", // Tiêu đề cột
-      dataIndex: "status", // Trường dữ liệu
-      render: (text: string) => {
-        return (
-          <span
-            style={{
-              background: text === "active" ? "green" : "red",
-              padding: "3px 10px",
-              borderRadius: 15,
-              color: "white",
-            }}
-          >
-            {text.toUpperCase()}
-          </span>
-        );
-      },
+      key: "alias_name",
+      title: "Alias Name",
+      dataIndex: "alias_name",
     },
     {
-      key: "6",
+      key: "role",
+      title: "Role",
+      dataIndex: "role",
+    },
+    {
+      key: "status",
+      title: "Status",
+      dataIndex: "status",
+      render: (text: string) => (
+        <span
+          style={{
+            background: text === "active" ? "green" : "red",
+            padding: "3px 10px",
+            borderRadius: 15,
+            color: "white",
+          }}
+        >
+          {text.toUpperCase()}
+        </span>
+      ),
+    },
+    {
+      key: "actions",
       title: "Actions",
       render: (record: User) => {
         return (
@@ -139,19 +166,8 @@ function UsersTable() {
     },
   ];
 
-  const onAddUser = () => {
-    // const randomNumber = Math.random() * 1000;
-    // const newUser: User = {
-    //   id: randomNumber,
-    //   name: "Name " + randomNumber,
-    //   email: randomNumber + "@gmail.com",
-    //   address: "Address " + randomNumber,
-    // };
-    // setDataSource((prev) => [...prev, newUser]);
-  };
   const onToggleStatus = (record: User) => {
     if (record.status === "active") {
-      // Nếu là active thì hiện modal chọn thời gian ban
       Modal.confirm({
         title: "Select ban duration",
         content: (
@@ -167,8 +183,6 @@ function UsersTable() {
             <Select.Option value="30">1 month</Select.Option>
             <Select.Option value="365">1 year</Select.Option>
             <Select.Option value="999">Permanent</Select.Option>
-
-            {/* Thêm các option khác nếu cần */}
           </Select>
         ),
         okText: "Ban",
@@ -176,9 +190,8 @@ function UsersTable() {
         cancelText: "Cancel",
       });
     } else {
-      // Nếu là banned thì chỉ cần unban mà không cần chọn thời gian
       Modal.confirm({
-        title: "Are you sure you want to unban this User?",
+        title: "Are you sure you want to unban this user?",
         okText: "Yes",
         okType: "primary",
         cancelText: "No",
@@ -190,7 +203,6 @@ function UsersTable() {
   };
 
   const banUser = (user: User, duration: string) => {
-    // Cập nhật thông tin người dùng và thời gian ban
     const updatedDataSource = dataSource.map((u) => {
       if (u.id === user.id) {
         return {
@@ -205,13 +217,12 @@ function UsersTable() {
   };
 
   const unbanUser = (user: User) => {
-    // Chỉ cần cập nhật trạng thái của người dùng là active
     const updatedDataSource = dataSource.map((u) => {
       if (u.id === user.id) {
         return {
           ...u,
           status: "active",
-          banDuration: undefined, // Xóa thông tin thời gian ban khi unban
+          banDuration: undefined,
         };
       }
       return u;
@@ -221,7 +232,7 @@ function UsersTable() {
 
   const onDeleteUser = (record: User) => {
     Modal.confirm({
-      title: "Are you sure, you want to delete this User record?",
+      title: "Are you sure you want to delete this user record?",
       okText: "Yes",
       okType: "danger",
       onOk: () => {
@@ -244,16 +255,14 @@ function UsersTable() {
     <div className="App p-12">
       <header className="App-header">
         <div className="mb-10 font-bold text-3xl">Total users</div>
-        <Table columns={columns} dataSource={dataSource}></Table>
+        <Table columns={columns} dataSource={dataSource} rowKey="id" />
         <Modal
           open={isEditing}
           okText="Save"
           onCancel={() => {
             resetEditing();
           }}
-          // Thêm prop okButtonProps để tùy chỉnh nút OK
           okButtonProps={{
-            // Sử dụng Modal.confirm của Ant Design khi nút OK được bấm
             onClick: () => {
               Modal.confirm({
                 title: "Are you sure you want to save changes?",
@@ -278,34 +287,37 @@ function UsersTable() {
         >
           <div className="font-bold text-3xl text-center">Edit user</div>
           <div className="mb-4">
-            <label className="block mb-2 font-bold">Name:</label>
+            <label className="block mb-2 font-bold">First Name:</label>
             <Input
-              value={editingUser?.name}
-              onChange={(e) => {
-                setEditingUser((prev) => ({ ...prev!, name: e.target.value }));
-              }}
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block mb-2 font-bold">Email:</label>
-            <Input
-              value={editingUser?.email}
+              value={editingUser?.first_name}
               onChange={(e) => {
                 setEditingUser((prev) => ({
                   ...prev!,
-                  email: e.target.value,
+                  first_name: e.target.value,
                 }));
               }}
             />
           </div>
           <div className="mb-4">
-            <label className="block mb-2 font-bold">Generation request:</label>
+            <label className="block mb-2 font-bold">Last Name:</label>
             <Input
-              value={editingUser?.request}
+              value={editingUser?.last_name}
               onChange={(e) => {
                 setEditingUser((prev) => ({
                   ...prev!,
-                  times: e.target.value,
+                  last_name: e.target.value,
+                }));
+              }}
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block mb-2 font-bold">Alias Name:</label>
+            <Input
+              value={editingUser?.alias_name ?? ""}
+              onChange={(e) => {
+                setEditingUser((prev) => ({
+                  ...prev!,
+                  alias_name: e.target.value,
                 }));
               }}
             />
