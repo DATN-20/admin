@@ -1,23 +1,83 @@
 "use client";
 
-import React from "react";
+import React, { use, useEffect, useState } from "react";
 import { Button, Checkbox, ConfigProvider, Form, Input } from "antd";
-
-const onFinish = (values: any) => {
-  console.log("Success:", values);
-};
-
-const onFinishFailed = (errorInfo: any) => {
-  console.log("Failed:", errorInfo);
-};
+import { useLoginUserMutation } from "@/services/auth/authApi"
+import { ErrorObject } from "@/types/ErrorObject";
+import { toast } from "react-toastify"
+import { setUser } from "@/features/authSlice";
+import { useAppDispatch } from "@/store/hooks";
+import { useRouter } from "next/navigation"
 
 type FieldType = {
-  username?: string;
+  email?: string;
   password?: string;
   remember?: string;
 };
 
-const Page: React.FC = () => (
+const Page: React.FC = () => {
+  const dispatch = useAppDispatch()
+  const router = useRouter()
+  const [
+    loginUser,
+    {
+      data: loginData,
+      isSuccess: isLoginSuccess,
+      isError: isLoginError,
+      error: loginError,
+      isLoading,
+    },
+  ] = useLoginUserMutation()
+
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  }) 
+
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false)
+  
+  const onSubmit = async (values: {
+    email: string;
+    password: string;
+  }) => {
+    const { email, password } = values
+    setIsButtonDisabled(true)
+    
+    if (email && password) {
+      const response = await loginUser({ email, password })
+
+      if ((response as ErrorObject).error) {
+        setIsButtonDisabled(false)
+        toast.error((response as ErrorObject).error.data.message)
+      }
+    } else {
+      toast.error("Please fill all Input field")
+    }
+    setTimeout(() => {
+      setIsButtonDisabled(false)
+    }, 1500)
+  }
+
+  useEffect(() => {
+    const token = localStorage.getItem("token")
+    if (token) {
+      router.push("/home")
+    }
+  }, [])
+
+  useEffect(() => {
+    const handleLoginSuccess = () => {
+      toast.success("User login successfully")
+      dispatch(setUser({ token: loginData.access_token, name: "Hao" }))
+      router.push("/home")
+    }
+
+    if (isLoginSuccess) {
+      handleLoginSuccess()
+    }
+  }, [isLoginSuccess])
+
+  return (
   <ConfigProvider theme={{ cssVar: true }}>
     <div className="login-page bg-blue-100 min-h-screen flex justify-center items-center">
       <div className="login-box flex justify-between items-center flex-row-reverse  bg-white shadow-lg overflow-hidden rounded-lg mx-auto">
@@ -30,8 +90,7 @@ const Page: React.FC = () => (
         <Form
           name="login-form"
           initialValues={{ remember: true }}
-          onFinish={onFinish}
-          onFinishFailed={onFinishFailed}
+          onFinish={() => onSubmit(formData)}
           className="flex-1 flex flex-col "
           style={{ padding: "0 40px" }}
         >
@@ -40,10 +99,12 @@ const Page: React.FC = () => (
           </p>
           <p className="text-gray-600 mb-4">Login to the Dashboard</p>
           <Form.Item<FieldType>
-            name="username"
-            rules={[{ required: true, message: "Please input your username!" }]}
+            name="email"
+            rules={[{ required: true, message: "Please input your email!" }]}
           >
-            <Input placeholder="Username" className="py-3 px-4 rounded-md" />
+            <Input placeholder="Email" type="email" className="py-3 px-4 rounded-md" 
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            />
           </Form.Item>
 
           <Form.Item<FieldType>
@@ -53,6 +114,7 @@ const Page: React.FC = () => (
             <Input.Password
               placeholder="Password"
               className="py-3 px-4 rounded-md"
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             />
           </Form.Item>
 
@@ -65,6 +127,7 @@ const Page: React.FC = () => (
               type="primary"
               htmlType="submit"
               className="login-form-button w-full py-3 rounded-md"
+              disabled={isButtonDisabled}
             >
               LOGIN
             </Button>
@@ -73,6 +136,7 @@ const Page: React.FC = () => (
       </div>
     </div>
   </ConfigProvider>
-);
+  )
+}
 
 export default Page;
