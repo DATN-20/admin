@@ -26,10 +26,12 @@ const Page: React.FC = () => {
           password,
         });
 
-        console.log(response);
         if (response.statusText === "OK") {
           toast.success("User login successfully");
           localStorage.setItem("token", response.data.access_token);
+          const res = await axiosInstance.get(`/api/v1/users/me`);
+          localStorage.setItem("userID", (res?.data?.id).toString());
+          localStorage.setItem("userData", JSON.stringify(res?.data));
           router.push("/home");
         }
         // Handle successful login

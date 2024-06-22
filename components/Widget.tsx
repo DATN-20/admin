@@ -1,20 +1,20 @@
 import { UserOutlined, HighlightOutlined, UpOutlined } from "@ant-design/icons";
+import Link from "next/link";
 interface WidgetProps {
   type: "user" | "generation";
+  amount: number;
 }
-const Widget: React.FC<WidgetProps> = ({ type }) => {
+const Widget: React.FC<WidgetProps> = ({ type, amount }) => {
   let data;
 
   //temporary
-  const amount = 100;
-  const diff = 20;
 
   switch (type) {
     case "user":
       data = {
         title: "USERS",
         isMoney: false,
-        link: "See all users",
+        link: <Link href="/users">See all users</Link>,
         icon: (
           <UserOutlined
             className="icon"
@@ -33,7 +33,7 @@ const Widget: React.FC<WidgetProps> = ({ type }) => {
       data = {
         title: "GENERATIONS",
         isMoney: false,
-        link: "View all generations",
+        link: <Link href="/generations">View all generations</Link>,
         icon: (
           <HighlightOutlined
             className="icon"
@@ -65,14 +65,6 @@ const Widget: React.FC<WidgetProps> = ({ type }) => {
         </span>
       </div>
       <div className="right flex flex-col justify-between items-end">
-        <div
-          className={`percentage text-md ${
-            diff > 0 ? "text-green-500" : "text-red-500"
-          }`}
-        >
-          <UpOutlined className="mr-1" />
-          {diff} %
-        </div>
         {data?.icon}
       </div>
     </div>

@@ -8,6 +8,8 @@ import {
   UnlockOutlined,
 } from "@ant-design/icons";
 import { ColumnType } from "antd/es/table";
+import axiosInstance from "@/axiosInstance"; // Ensure this is correctly set up to handle your API requests
+import axios from "axios";
 
 interface User {
   id: number;
@@ -18,65 +20,37 @@ interface User {
   status: string;
 }
 
-const apiData = {
-  limit: 9007199254740991,
-  page: 0,
-  total: 2,
-  data: [
-    {
-      user: {
-        id: 5,
-        first_name: "Hao",
-        last_name: "Truong",
-        phone: null,
-        address: null,
-        description: null,
-        socials: null,
-        alias_name: "Hao_Truong",
-        role: "ADMIN",
-        avatar: null,
-        background: null,
-        created_at: "2024-02-03T22:48:23.000Z",
-        updated_at: "2024-05-18T03:35:34.000Z",
-      },
-      locked_information: null,
-    },
-    {
-      user: {
-        id: 6,
-        first_name: "Thanh",
-        last_name: "Le",
-        phone: null,
-        address: null,
-        description: null,
-        socials: null,
-        alias_name: "Thanh_le",
-        role: "USER",
-        avatar: null,
-        background: null,
-        created_at: "2024-05-05T22:48:23.000Z",
-        updated_at: "2024-05-05T22:48:23.000Z",
-      },
-      locked_information: null,
-    },
-  ],
-};
-
 function UsersTable() {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [dataSource, setDataSource] = useState<User[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const transformedData = apiData.data.map((item) => ({
-      id: item.user.id,
-      first_name: item.user.first_name,
-      last_name: item.user.last_name,
-      alias_name: item.user.alias_name,
-      role: item.user.role,
-      status: "active",
-    }));
-    setDataSource(transformedData);
+    axiosInstance
+      .get("/api/v1/admin/management/users", {
+        params: {
+          limit: 1000,
+          page: 1,
+        },
+      })
+      .then((response) => {
+        const apiData = response.data;
+        const transformedData = apiData.data.map((item: any) => ({
+          id: item.user.id,
+          first_name: item.user.first_name,
+          last_name: item.user.last_name,
+          alias_name: item.user.alias_name,
+          role: item.user.role,
+          status: item.locked_information ? "banned" : "active",
+        }));
+        setDataSource(transformedData);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching data: ", error);
+        setLoading(false);
+      });
   }, []);
 
   const columns: ColumnType<User>[] = [
@@ -154,12 +128,12 @@ function UsersTable() {
                 style={{ color: "green", marginLeft: 12, fontSize: 24 }}
               />
             )}
-            <DeleteOutlined
+            {/* <DeleteOutlined
               onClick={() => {
                 onDeleteUser(record);
               }}
               style={{ color: "red", marginLeft: 12, fontSize: 24 }}
-            />
+            /> */}
           </>
         );
       },
@@ -168,15 +142,14 @@ function UsersTable() {
 
   const onToggleStatus = (record: User) => {
     if (record.status === "active") {
+      let selectedValue = "1";
       Modal.confirm({
         title: "Select ban duration",
         content: (
           <Select
             defaultValue="1"
             style={{ width: 300 }}
-            onChange={(value) => {
-              banUser(record, value);
-            }}
+            onChange={(value) => (selectedValue = value)}
           >
             <Select.Option value="1">1 day</Select.Option>
             <Select.Option value="7">1 week</Select.Option>
@@ -188,6 +161,10 @@ function UsersTable() {
         okText: "Ban",
         okType: "danger",
         cancelText: "Cancel",
+        onOk: (value) => {
+          banUser(record, selectedValue);
+          Modal.destroyAll();
+        },
       });
     } else {
       Modal.confirm({
@@ -203,31 +180,57 @@ function UsersTable() {
   };
 
   const banUser = (user: User, duration: string) => {
-    const updatedDataSource = dataSource.map((u) => {
-      if (u.id === user.id) {
-        return {
-          ...u,
-          status: "banned",
-          banDuration: duration,
-        };
-      }
-      return u;
-    });
-    setDataSource(updatedDataSource);
+    const type = duration === "999" ? "permanent" : "temparory";
+    axiosInstance
+      .post("/api/v1/admin/management/users/lock", {
+        lockedUserId: user.id,
+        type: type,
+        period: duration,
+        unit: "days",
+      })
+      .then((response) => {
+        // Handle success
+        const updatedDataSource = dataSource.map((u) => {
+          if (u.id === user.id) {
+            return {
+              ...u,
+              status: "banned",
+              banDuration: duration,
+            };
+          }
+          return u;
+        });
+        setDataSource(updatedDataSource);
+      })
+      .catch((error) => {
+        // Handle error
+        console.error("There was an error banning the user!", error);
+      });
   };
 
   const unbanUser = (user: User) => {
-    const updatedDataSource = dataSource.map((u) => {
-      if (u.id === user.id) {
-        return {
-          ...u,
-          status: "active",
-          banDuration: undefined,
-        };
-      }
-      return u;
-    });
-    setDataSource(updatedDataSource);
+    axiosInstance
+      .patch("/api/v1/admin/management/users/unlock", {
+        lockedUserId: user.id,
+      })
+      .then((response) => {
+        // Handle success
+        const updatedDataSource = dataSource.map((u) => {
+          if (u.id === user.id) {
+            return {
+              ...u,
+              status: "active",
+              banDuration: undefined,
+            };
+          }
+          return u;
+        });
+        setDataSource(updatedDataSource);
+      })
+      .catch((error) => {
+        // Handle error
+        console.error("There was an error banning the user!", error);
+      });
   };
 
   const onDeleteUser = (record: User) => {
@@ -255,7 +258,12 @@ function UsersTable() {
     <div className="App p-12">
       <header className="App-header">
         <div className="mb-10 font-bold text-3xl">Total users</div>
-        <Table columns={columns} dataSource={dataSource} rowKey="id" />
+        <Table
+          columns={columns}
+          dataSource={dataSource}
+          rowKey="id"
+          loading={loading}
+        />
         <Modal
           open={isEditing}
           okText="Save"
