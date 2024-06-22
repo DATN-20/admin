@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Button, Checkbox, ConfigProvider, Form, Input } from "antd";
 import { useRouter } from "next/navigation";
 import axiosInstance from "@/axiosInstance";
+import { toast } from "react-toastify";
 
 type FieldType = {
   email?: string;
@@ -27,6 +28,7 @@ const Page: React.FC = () => {
 
         console.log(response);
         if (response.statusText === "OK") {
+          toast.success("User login successfully");
           localStorage.setItem("token", response.data.access_token);
           router.push("/home");
         }
@@ -36,7 +38,7 @@ const Page: React.FC = () => {
         // Handle login failure
       }
     } else {
-      console.log("Please fill all Input field");
+      toast.error("Please fill all Input field");
     }
     setTimeout(() => {
       setIsButtonDisabled(false);
