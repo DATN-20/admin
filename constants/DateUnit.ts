@@ -1,4 +1,4 @@
-enum DateUnit {
+export enum DateUnit {
         DAYS = 'days',
         MONTHS = 'months',
         WEEKS = 'weeks',

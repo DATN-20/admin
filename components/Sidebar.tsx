@@ -1,85 +1,66 @@
+"use client"
+
+import React from "react";
 import Link from "next/link";
+import jwt from "jsonwebtoken";
+import { DashboardOutlined, UserOutlined, HighlightOutlined, LogoutOutlined, SolutionOutlined } from "@ant-design/icons";
+import { useLogoutUserMutation } from "../services/auth/authApi";
+import { toast } from "react-toastify";
+import NextImage from "next/image";
 
-import {
-  DashboardOutlined,
-  UserOutlined,
-  HighlightOutlined,
-  LogoutOutlined,
-  SolutionOutlined,
-} from "@ant-design/icons";
+interface DecodedToken {
+  id: number;
+}
 
-const Sidebar = () => {
+interface MenuItemProps {
+  icon: React.ElementType;
+  text: string;
+  href: string;
+}
+
+const MenuItem: React.FC<MenuItemProps> = ({ icon: Icon, text, href }) => (
+  <Link href={href}>
+    <li className="flex items-center p-2 my-2 cursor-pointer rounded-lg hover:bg-gradient-to-r hover:from-purple-400 hover:via-indigo-500 hover:to-blue-400 hover:text-white">
+      {Icon && <Icon className="icon text-purple-600" style={{ fontSize: "32px", marginRight: 10 }} />}
+      <span className="text-md font-semibold ml-2">{text}</span>
+    </li>
+  </Link>
+);
+
+const Sidebar: React.FC = () => {
+  const [logoutUser] = useLogoutUserMutation();
+
+  const handleLogout = () => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      const decoded: DecodedToken = jwt.decode(token) as DecodedToken;
+      logoutUser({ id: decoded.id });
+    }
+    localStorage.removeItem("token");
+    window.location.href = "/";
+    toast.success("Logout successfully");
+  };
+
   return (
     <div className="sidebar flex flex-col border-r border-gray-300 min-h-screen bg-white w-full">
       <div className="top h-16 flex items-center justify-center">
-        <Link href="/">
-          <div className="logo text-lg font-bold text-purple-600">
-            AI4Artist
-          </div>
+        <Link href="/" className="flex items-center gap-2 bg-gradient-to-r from-purple-700 via-red-300 to-indigo-400 text-transparent bg-clip-text">
+          <NextImage alt="logo" width={80} height={80} src="/logo-black.png" />
+          <span className="select-none bg-clip-text text-3xl font-mono">AI4Artist</span>
         </Link>
       </div>
       <hr className="border-t border-gray-300" />
       <div className="center px-4">
         <ul className="mt-4">
-          <p className="title text-xs font-bold text-gray-600 uppercase">
-            MAIN
-          </p>
-          <Link href="/home">
-            <li className="flex items-center py-2 cursor-pointer hover:bg-gray-100">
-              <DashboardOutlined
-                className="icon text-purple-600"
-                style={{ fontSize: "32px", marginRight: 10 }}
-              />
-              <span className="text-md font-semibold text-gray-800 ml-2">
-                Dashboard
-              </span>
-            </li>
-          </Link>
-
-          <p className="title text-xs font-bold text-gray-600 uppercase mt-4">
-            LISTS
-          </p>
-          <Link href="/users">
-            <div className="flex items-center py-2 cursor-pointer hover:bg-gray-100">
-              <UserOutlined
-                className="icon text-purple-600"
-                style={{ fontSize: "32px", marginRight: 10 }}
-              />
-              <span className="text-md font-semibold text-gray-800 ml-2">
-                Users
-              </span>
-            </div>
-          </Link>
-          <Link href="/generations">
-            <div className="flex items-center py-2 cursor-pointer hover:bg-gray-100">
-              <HighlightOutlined
-                className="icon text-purple-600"
-                style={{ fontSize: "32px", marginRight: 10 }}
-              />
-              <span className="text-md font-semibold text-gray-800 ml-2">
-                Generations
-              </span>
-            </div>
-          </Link>
-          <Link href="/logs">
-            <div className="flex items-center py-2 cursor-pointer hover:bg-gray-100">
-              <SolutionOutlined
-                className="icon text-purple-600"
-                style={{ fontSize: "32px", marginRight: 10 }}
-              />
-              <span className="text-md font-semibold text-gray-800 ml-2">
-                Logs Monitoring
-              </span>
-            </div>
-          </Link>
-          <li className="flex items-center py-2 cursor-pointer hover:bg-gray-100">
-            <LogoutOutlined
-              className="icon text-purple-600"
-              style={{ fontSize: "32px", marginRight: 10 }}
-            />
-            <span className="text-md font-semibold text-gray-800 ml-2">
-              Logout
-            </span>
+          <p className="title text-xs font-bold text-gray-600 uppercase">MAIN</p>
+          <MenuItem href="/home" icon={DashboardOutlined} text="Dashboard" />
+          <p className="title text-xs font-bold text-gray-600 uppercase mt-4">LISTS</p>
+          <MenuItem href="/users" icon={UserOutlined} text="Users" />
+          <MenuItem href="/generations" icon={HighlightOutlined} text="Generations" />
+          <MenuItem href="/logs" icon={SolutionOutlined} text="Logs Monitoring" />
+          <li className="flex items-center p-2 my-2 cursor-pointer rounded-lg hover:bg-gradient-to-r hover:from-purple-400 hover:via-indigo-500 hover:to-blue-400 hover:text-white" onClick={handleLogout}>
+            <LogoutOutlined className="icon text-purple-600" style={{ fontSize: "32px", marginRight: 10 }} />
+            <span className="text-md font-semibold ml-2">Logout</span>
           </li>
         </ul>
       </div>

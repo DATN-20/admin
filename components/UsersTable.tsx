@@ -1,144 +1,121 @@
 "use client";
+
 import { Button, Table, Modal, Input, Select } from "antd";
 import { useState, useEffect } from "react";
-import {
-  EditOutlined,
-  DeleteOutlined,
-  StopOutlined,
-  UnlockOutlined,
-} from "@ant-design/icons";
+import { StopOutlined, UnlockOutlined } from "@ant-design/icons";
 import { ColumnType } from "antd/es/table";
-
-interface User {
-  id: number;
-  first_name: string;
-  last_name: string;
-  alias_name: string | null;
-  role: string | null;
-  status: string;
-}
-
-const apiData = {
-  limit: 9007199254740991,
-  page: 0,
-  total: 2,
-  data: [
-    {
-      user: {
-        id: 5,
-        first_name: "Hao",
-        last_name: "Truong",
-        phone: null,
-        address: null,
-        description: null,
-        socials: null,
-        alias_name: "Hao_Truong",
-        role: "ADMIN",
-        avatar: null,
-        background: null,
-        created_at: "2024-02-03T22:48:23.000Z",
-        updated_at: "2024-05-18T03:35:34.000Z",
-      },
-      locked_information: null,
-    },
-    {
-      user: {
-        id: 6,
-        first_name: "Thanh",
-        last_name: "Le",
-        phone: null,
-        address: null,
-        description: null,
-        socials: null,
-        alias_name: "Thanh_le",
-        role: "USER",
-        avatar: null,
-        background: null,
-        created_at: "2024-05-05T22:48:23.000Z",
-        updated_at: "2024-05-05T22:48:23.000Z",
-      },
-      locked_information: null,
-    },
-  ],
-};
+import {
+  useGetUsersQuery,
+  useLockUserMutation,
+  useUnlockUserMutation,
+} from "@/services/userManagement/userManagementApi";
+import { UserManagement } from "@/types/UserManagement";
+import { toast } from "react-toastify";
+import { LockUserType } from "@/constants/LockUserType";
+import { DateUnit } from "@/constants/DateUnit";
 
 function UsersTable() {
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [dataSource, setDataSource] = useState<User[]>([]);
+  const [dataSource, setDataSource] = useState<UserManagement.UserData[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
+  const [totalUsers, setTotalUsers] = useState<number>(0);
+
+  const { data: userdata, refetch } = useGetUsersQuery({
+    limit: pagination.pageSize,
+    page: pagination.current,
+  });
+
+  const [lockUser] = useLockUserMutation();
+  const [unlockUser] = useUnlockUserMutation();
+
+  const lockDurationOptions = [
+    { value: "1", label: "1 day" },
+    { value: "7", label: "1 week" },
+    { value: "30", label: "1 month" },
+    { value: "365", label: "1 year" },
+    { value: "999", label: "Permanent" },
+  ];
 
   useEffect(() => {
-    const transformedData = apiData.data.map((item) => ({
-      id: item.user.id,
-      first_name: item.user.first_name,
-      last_name: item.user.last_name,
-      alias_name: item.user.alias_name,
-      role: item.user.role,
-      status: "active",
-    }));
-    setDataSource(transformedData);
-  }, []);
+    if (typeof userdata === "undefined") return;
+    setDataSource(userdata.data);
+    setTotalUsers(userdata.total);
+    setLoading(false);
+  }, [userdata, pagination]);
 
-  const columns: ColumnType<User>[] = [
+  const columns: ColumnType<UserManagement.UserData>[] = [
     {
       key: "id",
       title: "ID",
-      dataIndex: "id",
+      dataIndex: ["user", "id"],
     },
     {
       key: "first_name",
       title: "First Name",
-      dataIndex: "first_name",
-      sorter: (a: User, b: User) => a.first_name.localeCompare(b.first_name),
+      dataIndex: ["user", "first_name"],
+      sorter: (a: UserManagement.UserData, b: UserManagement.UserData) =>
+        a.user.first_name.localeCompare(b.user.first_name),
       sortDirections: ["descend", "ascend"],
     },
     {
       key: "last_name",
       title: "Last Name",
-      dataIndex: "last_name",
-      sorter: (a: User, b: User) => a.last_name.localeCompare(b.last_name),
+      dataIndex: ["user", "last_name"],
+      sorter: (a: UserManagement.UserData, b: UserManagement.UserData) =>
+        a.user.last_name.localeCompare(b.user.last_name),
       sortDirections: ["descend", "ascend"],
     },
     {
       key: "alias_name",
       title: "Alias Name",
-      dataIndex: "alias_name",
+      dataIndex: ["user", "alias_name"],
     },
     {
       key: "role",
       title: "Role",
-      dataIndex: "role",
+      dataIndex: ["user", "role"],
     },
     {
-      key: "status",
+      key: "locked_information",
       title: "Status",
-      dataIndex: "status",
-      render: (text: string) => (
+      dataIndex: "locked_information",
+      render: (locked_information: UserManagement.LockedInformation | null) => (
         <span
           style={{
-            background: text === "active" ? "green" : "red",
+            background: !locked_information ? "green" : "red",
             padding: "3px 10px",
             borderRadius: 15,
             color: "white",
           }}
         >
-          {text.toUpperCase()}
+          {locked_information ? "Banned" : "Active"}
         </span>
       ),
     },
     {
+      key: "ban_duration",
+      title: "Ban Duration",
+      render: (record: UserManagement.UserData) => {
+        if (!record.locked_information) return "";
+        if (record.locked_information.type === LockUserType.PERMANENT) {
+          return "Permanent";
+        }
+        var startBan = new Date(
+          record.locked_information.locked_at
+        ).toLocaleDateString();
+        var endBan = new Date(
+          record.locked_information.expired_at
+        ).toLocaleDateString();
+        return startBan + " - " + endBan;
+      },
+    },
+    {
       key: "actions",
       title: "Actions",
-      render: (record: User) => {
+      render: (record: UserManagement.UserData) => {
         return (
           <>
-            <EditOutlined
-              style={{ fontSize: 24 }}
-              onClick={() => {
-                onEditUser(record);
-              }}
-            />
-            {record.status === "active" ? (
+            {!record.locked_information ? (
               <StopOutlined
                 onClick={() => {
                   onToggleStatus(record);
@@ -154,44 +131,41 @@ function UsersTable() {
                 style={{ color: "green", marginLeft: 12, fontSize: 24 }}
               />
             )}
-            <DeleteOutlined
-              onClick={() => {
-                onDeleteUser(record);
-              }}
-              style={{ color: "red", marginLeft: 12, fontSize: 24 }}
-            />
           </>
         );
       },
     },
   ];
 
-  const onToggleStatus = (record: User) => {
-    if (record.status === "active") {
+  const onToggleStatus = (record: UserManagement.UserData) => {
+    if (!record.locked_information) {
+      let selectedValue = "1";
       Modal.confirm({
-        title: "Select ban duration",
+        title: "Select lock duration",
         content: (
           <Select
             defaultValue="1"
             style={{ width: 300 }}
-            onChange={(value) => {
-              banUser(record, value);
-            }}
+            onChange={(value) => (selectedValue = value)}
           >
-            <Select.Option value="1">1 day</Select.Option>
-            <Select.Option value="7">1 week</Select.Option>
-            <Select.Option value="30">1 month</Select.Option>
-            <Select.Option value="365">1 year</Select.Option>
-            <Select.Option value="999">Permanent</Select.Option>
+            {lockDurationOptions.map((option) => (
+              <Select.Option key={option.value} value={option.value}>
+                {option.label}
+              </Select.Option>
+            ))}
           </Select>
         ),
-        okText: "Ban",
+        okText: "Lock",
         okType: "danger",
         cancelText: "Cancel",
+        onOk: () => {
+          banUser(record, selectedValue);
+          Modal.destroyAll();
+        },
       });
     } else {
       Modal.confirm({
-        title: "Are you sure you want to unban this user?",
+        title: "Are you sure you want to unlock this user?",
         okText: "Yes",
         okType: "primary",
         cancelText: "No",
@@ -202,127 +176,73 @@ function UsersTable() {
     }
   };
 
-  const banUser = (user: User, duration: string) => {
+  const banUser = (user: UserManagement.UserData, duration: string) => {
+    const type =
+      duration === "999" ? LockUserType.PERMANENT : LockUserType.TEMPARORY;
+    lockUser({
+      lockedUserId: user.user.id,
+      type: type,
+      period: parseInt(duration),
+      unit: DateUnit.DAYS,
+    }).unwrap();
+
     const updatedDataSource = dataSource.map((u) => {
-      if (u.id === user.id) {
-        return {
+      if (u.user.id === user.user.id) {
+        const updatedUser = {
           ...u,
-          status: "banned",
-          banDuration: duration,
+          locked_information: {
+            user_id: user.user.id,
+            type: type,
+            locked_at: new Date(),
+            expired_at: new Date(
+              new Date().setDate(new Date().getDate() + parseInt(duration))
+            ),
+          },
         };
+        return updatedUser;
       }
       return u;
     });
     setDataSource(updatedDataSource);
   };
 
-  const unbanUser = (user: User) => {
+  const unbanUser = (user: UserManagement.UserData) => {
+    unlockUser({ lockedUserId: user.user.id });
     const updatedDataSource = dataSource.map((u) => {
-      if (u.id === user.id) {
-        return {
+      if (u.user.id === user.user.id) {
+        const updatedUser = {
           ...u,
-          status: "active",
-          banDuration: undefined,
+          locked_information: null,
         };
+        return updatedUser;
       }
       return u;
     });
     setDataSource(updatedDataSource);
-  };
-
-  const onDeleteUser = (record: User) => {
-    Modal.confirm({
-      title: "Are you sure you want to delete this user record?",
-      okText: "Yes",
-      okType: "danger",
-      onOk: () => {
-        setDataSource((prev) => prev.filter((user) => user.id !== record.id));
-      },
-    });
-  };
-
-  const onEditUser = (record: User) => {
-    setIsEditing(true);
-    setEditingUser({ ...record });
-  };
-
-  const resetEditing = () => {
-    setIsEditing(false);
-    setEditingUser(null);
   };
 
   return (
     <div className="App p-12">
       <header className="App-header">
-        <div className="mb-10 font-bold text-3xl">Total users</div>
-        <Table columns={columns} dataSource={dataSource} rowKey="id" />
-        <Modal
-          open={isEditing}
-          okText="Save"
-          onCancel={() => {
-            resetEditing();
+        <div className="mb-10 font-bold text-3xl">
+          Total users: {totalUsers}
+        </div>
+        <Table
+          columns={columns}
+          dataSource={dataSource}
+          rowKey="id"
+          loading={loading}
+          pagination={{
+            ...pagination,
+            total: totalUsers,
+            showSizeChanger: true,
+            showQuickJumper: true,
+            onChange: (page, pageSize) =>
+              setPagination({ current: page, pageSize }),
+            onShowSizeChange: (current, size) =>
+              setPagination({ current, pageSize: size }),
           }}
-          okButtonProps={{
-            onClick: () => {
-              Modal.confirm({
-                title: "Are you sure you want to save changes?",
-                okText: "Yes",
-                okType: "primary",
-                cancelText: "No",
-                onOk: () => {
-                  setDataSource((prev) =>
-                    prev.map((user) => {
-                      if (user.id === editingUser!.id) {
-                        return editingUser!;
-                      } else {
-                        return user;
-                      }
-                    })
-                  );
-                  resetEditing();
-                },
-              });
-            },
-          }}
-        >
-          <div className="font-bold text-3xl text-center">Edit user</div>
-          <div className="mb-4">
-            <label className="block mb-2 font-bold">First Name:</label>
-            <Input
-              value={editingUser?.first_name}
-              onChange={(e) => {
-                setEditingUser((prev) => ({
-                  ...prev!,
-                  first_name: e.target.value,
-                }));
-              }}
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block mb-2 font-bold">Last Name:</label>
-            <Input
-              value={editingUser?.last_name}
-              onChange={(e) => {
-                setEditingUser((prev) => ({
-                  ...prev!,
-                  last_name: e.target.value,
-                }));
-              }}
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block mb-2 font-bold">Alias Name:</label>
-            <Input
-              value={editingUser?.alias_name ?? ""}
-              onChange={(e) => {
-                setEditingUser((prev) => ({
-                  ...prev!,
-                  alias_name: e.target.value,
-                }));
-              }}
-            />
-          </div>
-        </Modal>
+        />
       </header>
     </div>
   );

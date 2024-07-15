@@ -1,70 +1,32 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Chart from "chart.js/auto";
+import axiosInstance from "@/axiosInstance"; // Ensure you have the correct import for axiosInstance
+import { Select } from "antd"; // Import Select from antd
 
-const GenerateChart = () => {
+interface GenerationChartProps {
+  chartData: {
+    labels: string[];
+    datasets: {
+      label: string;
+      data: number[];
+      backgroundColor: string;
+      borderColor: string;
+      borderWidth: number;
+    }[];
+  };
+}
+const GenerateChart: React.FC<GenerationChartProps> = ({ chartData }) => {
   const chartRef = useRef<HTMLCanvasElement>(null);
   const chartInstanceRef = useRef<Chart>();
 
   useEffect(() => {
-    if (!chartRef.current) return;
+    if (!chartRef.current || !chartData) return;
 
     const ctx = chartRef.current.getContext("2d");
 
-    const apiData = {
-      start_date: "2024-04-30T17:00:00.000Z",
-      end_date: "2024-05-06T17:00:00.000Z",
-      data: [
-        {
-          date: "2024-04-30T17:00:00.000Z",
-          total: 5,
-        },
-        {
-          date: "2024-05-01T17:00:00.000Z",
-          total: 6,
-        },
-        {
-          date: "2024-05-02T17:00:00.000Z",
-          total: 0,
-        },
-        {
-          date: "2024-05-03T17:00:00.000Z",
-          total: 0,
-        },
-        {
-          date: "2024-05-04T17:00:00.000Z",
-          total: 1,
-        },
-        {
-          date: "2024-05-05T17:00:00.000Z",
-          total: 0,
-        },
-        {
-          date: "2024-05-06T17:00:00.000Z",
-          total: 0,
-        },
-      ],
-    };
-
-    const labels = apiData.data.map((entry) =>
-      new Date(entry.date).toLocaleDateString("en-US")
-    );
-    const data = apiData.data.map((entry) => entry.total);
-
-    const chartData = {
-      labels: labels,
-      datasets: [
-        {
-          label: "Total Generation",
-          data: data,
-          backgroundColor: "rgba(54, 162, 235, 0.2)",
-          borderColor: "rgba(54, 162, 235, 1)",
-          borderWidth: 1,
-        },
-      ],
-    };
-
+    // Destroy previous chart instance if it exists
     if (chartInstanceRef.current) {
       chartInstanceRef.current.destroy();
     }
@@ -88,10 +50,10 @@ const GenerateChart = () => {
         chartInstanceRef.current.destroy();
       }
     };
-  }, []);
+  }, [chartData]);
 
   return (
-    <div className="w-full h-64 flex justify-center">
+    <div className="w-full h-64 flex flex-col items-center">
       <canvas ref={chartRef}></canvas>
     </div>
   );

@@ -1,5 +1,4 @@
 import LogsTable from "@/components/LogsTable";
-import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 const Logs = () => {
   return (
@@ -8,7 +7,6 @@ const Logs = () => {
         <Sidebar />
       </div>
       <div className="flex-grow w-5/6">
-        <Navbar />
         <LogsTable />
       </div>
     </div>

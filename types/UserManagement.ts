@@ -1,9 +1,13 @@
+import { LockUserType } from "@/constants/LockUserType";
 import { DateTotal } from "./DateTotal";
+import { DateUnit } from "@/constants/DateUnit";
 
 export namespace UserManagement {
-    interface User {
+  export interface User {
         id: number;
         first_name: string;
+        last_name: string;
+        alias_name: string | null;
         username: string;
         email: string;
         role: string;
@@ -11,14 +15,14 @@ export namespace UserManagement {
         createdAt: string;
     }
 
-    interface LockedInformation {
+    export interface LockedInformation {
         user_id: number;
         type: LockUserType;
         locked_at: Date;
         expired_at: Date;
     }
     
-    interface UserData {
+    export interface UserData {
         user: User;
         locked_information: LockedInformation | null;
     }

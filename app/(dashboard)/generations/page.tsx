@@ -1,5 +1,4 @@
 import GenerationsTable from "@/components/GenerationsTable";
-import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 const Generations = () => {
   return (
@@ -8,7 +7,6 @@ const Generations = () => {
         <Sidebar />
       </div>
       <div className="flex-grow w-5/6">
-        <Navbar />
         <GenerationsTable />
       </div>
     </div>
