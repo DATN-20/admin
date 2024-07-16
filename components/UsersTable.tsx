@@ -1,8 +1,13 @@
 "use client";
 
-import { Button, Table, Modal, Input, Select } from "antd";
+import { useRouter } from "next/navigation";
+import { Button, Table, Modal, Select } from "antd";
 import { useState, useEffect } from "react";
-import { StopOutlined, UnlockOutlined } from "@ant-design/icons";
+import {
+  StopOutlined,
+  UnlockOutlined,
+  InfoCircleOutlined,
+} from "@ant-design/icons";
 import { ColumnType } from "antd/es/table";
 import {
   useGetUsersQuery,
@@ -10,7 +15,6 @@ import {
   useUnlockUserMutation,
 } from "@/services/userManagement/userManagementApi";
 import { UserManagement } from "@/types/UserManagement";
-import { toast } from "react-toastify";
 import { LockUserType } from "@/constants/LockUserType";
 import { DateUnit } from "@/constants/DateUnit";
 
@@ -19,8 +23,9 @@ function UsersTable() {
   const [loading, setLoading] = useState<boolean>(true);
   const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
   const [totalUsers, setTotalUsers] = useState<number>(0);
+  const router = useRouter();
 
-  const { data: userdata, refetch } = useGetUsersQuery({
+  const { data: userdata } = useGetUsersQuery({
     limit: pagination.pageSize,
     page: pagination.current,
   });
@@ -114,7 +119,14 @@ function UsersTable() {
       title: "Actions",
       render: (record: UserManagement.UserData) => {
         return (
-          <>
+          <div className="flex items-center">
+            <InfoCircleOutlined
+              style={{ fontSize: 24 }}
+              className="hover:text-blue-500 cursor-pointer"
+              onClick={() => {
+                router.push(`/users/${record.user.id}`);
+              }}
+            />
             {!record.locked_information ? (
               <StopOutlined
                 onClick={() => {
@@ -131,7 +143,7 @@ function UsersTable() {
                 style={{ color: "green", marginLeft: 12, fontSize: 24 }}
               />
             )}
-          </>
+          </div>
         );
       },
     },

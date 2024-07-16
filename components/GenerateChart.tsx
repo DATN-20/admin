@@ -2,8 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import Chart from "chart.js/auto";
-import axiosInstance from "@/axiosInstance"; // Ensure you have the correct import for axiosInstance
-import { Select } from "antd"; // Import Select from antd
 
 interface GenerationChartProps {
   chartData: {
@@ -54,7 +52,9 @@ const GenerateChart: React.FC<GenerationChartProps> = ({ chartData }) => {
 
   return (
     <div className="w-full h-64 flex flex-col items-center">
-      <canvas ref={chartRef}></canvas>
+      <div className="w-2/3">
+        <canvas ref={chartRef}></canvas>
+      </div>
     </div>
   );
 };

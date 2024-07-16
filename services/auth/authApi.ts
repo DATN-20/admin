@@ -1,3 +1,4 @@
+import { LoginResponse } from "@/types/LoginResponse";
 import { createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react";
 
 export const authApi = createApi({
@@ -6,7 +7,11 @@ export const authApi = createApi({
     baseUrl: process.env.NEXT_PUBLIC_API_URL,
   }),
   endpoints: (builder) => ({
-    loginUser: builder.mutation({
+    loginUser: builder.mutation<LoginResponse, 
+    {
+      email: string;
+      password: string;
+    }>({
       query: (body: { email: string; password: string }) => {
         return {
           url: "api/v1/auth/signin",

@@ -52,8 +52,10 @@ const UserChart: React.FC<UserChartProps> = ({ chartData }) => {
   }, [chartData]);
 
   return (
-    <div className="w-full h-64 flex justify-center">
-      <canvas ref={chartRef}></canvas>
+    <div className="w-full h-64 flex flex-col items-center">
+      <div className="w-2/3">
+        <canvas ref={chartRef}></canvas>
+      </div>
     </div>
   );
 };

@@ -15,7 +15,9 @@ export const store = configureStore({
     [imageStatisticsApi.reducerPath]: imageStatisticsApi.reducer
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(
+    getDefaultMiddleware(
+      { serializableCheck: false }
+    ).concat(
         authApi.middleware,
         userManagementApi.middleware,
         logMonitoringApi.middleware,
