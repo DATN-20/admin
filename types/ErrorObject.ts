@@ -10,3 +10,9 @@ export interface ErrorObject {
       }
     }
   }
+
+  export interface ErrorObjectRegister {
+    error: {
+      data: string
+    }
+  }

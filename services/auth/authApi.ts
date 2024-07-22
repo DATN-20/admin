@@ -1,11 +1,10 @@
 import { LoginResponse } from "@/types/LoginResponse";
 import { createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react";
+import customBaseQuery from "../customBaseQuery";
 
 export const authApi = createApi({
   reducerPath: "authApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_API_URL,
-  }),
+  baseQuery: customBaseQuery,
   endpoints: (builder) => ({
     loginUser: builder.mutation<LoginResponse, 
     {

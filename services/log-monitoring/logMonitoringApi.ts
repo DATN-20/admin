@@ -2,16 +2,11 @@ import { LogMonitoring } from "@/types/LogMonitoring"
 import { UserManagement } from "@/types/UserManagement"
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
 import { get } from "http"
+import customBaseQuery from "../customBaseQuery"
 
 export const logMonitoringApi = createApi({
   reducerPath: "logMonitoringApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_API_URL,
-    prepareHeaders(headers) {
-      headers.set("Authorization", `Bearer ${localStorage.getItem("token")}`)
-      return headers
-    },
-  }),
+  baseQuery: customBaseQuery,
   endpoints: (builder) => ({
     getLoggingApi: builder.query<LogMonitoring.GetApiLoggingResponse, LogMonitoring.GetApiLoggingRequest>({
       query: ({ limit, page, startDate, endDate, endpoint }) => {
