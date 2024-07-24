@@ -8,8 +8,8 @@ RUN npm install
 
 COPY . ./
 
-ENV NEXT_PUBLIC_API_URL=https://api.mangahay.top/
-ENV NEXT_PUBLIC_SOCKET_URL=https://socket.mangahay.top/
+ENV NEXT_PUBLIC_API_URL https://api.mangahay.top/
+ENV NEXT_PUBLIC_SOCKET_URL https://socket.mangahay.top/
 
 RUN npm run build
 
@@ -24,8 +24,8 @@ COPY --from=builder /app/next.config.mjs ./next.config.mjs
 
 RUN npm install --only=production
 
-ENV NEXT_PUBLIC_API_URL=https://api.mangahay.top/
-ENV NEXT_PUBLIC_SOCKET_URL=https://socket.mangahay.top/
+ENV NEXT_PUBLIC_API_URL https://api.mangahay.top/
+ENV NEXT_PUBLIC_SOCKET_URL https://socket.mangahay.top/
 
 EXPOSE 3002
 

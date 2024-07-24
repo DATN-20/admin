@@ -6,3 +6,4 @@ dockercompose.yml
 .git
 .gitignore
 .next
+.env
