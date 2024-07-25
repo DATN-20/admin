@@ -20,7 +20,7 @@ function eraseCookie(name: string) {
 }
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: process.env.NEXT_PUBLIC_API_URL, // Replace with your API base URL
+  baseUrl: process.env.NEXT_PUBLIC_API_URL,
   prepareHeaders: (headers) => {
     const token = getCookie("token")
     if(token){

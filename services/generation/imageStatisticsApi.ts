@@ -1,9 +1,6 @@
 import { ImageFilterType } from "@/constants/ImageFilterType"
 import { ImageStatistics } from "@/types/ImageStatistics"
-import { LogMonitoring } from "@/types/LogMonitoring"
-import { UserManagement } from "@/types/UserManagement"
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
-import { get } from "http"
+import { createApi } from "@reduxjs/toolkit/query/react"
 import customBaseQuery from "../customBaseQuery"
 
 export const imageStatisticsApi = createApi({

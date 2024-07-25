@@ -4,7 +4,9 @@ import customBaseQuery from "../customBaseQuery";
 
 export const authApi = createApi({
   reducerPath: "authApi",
-  baseQuery: customBaseQuery,
+  baseQuery: fetchBaseQuery({
+    baseUrl: process.env.NEXT_PUBLIC_API_URL,
+  }),
   endpoints: (builder) => ({
     loginUser: builder.mutation<LoginResponse, 
     {
