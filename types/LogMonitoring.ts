@@ -7,7 +7,7 @@ export namespace LogMonitoring {
         endpoint: AcceptanceEndpoint;
       }
 
-      interface ApiLogJson {
+      export interface ApiLogJson {
         user_id: number;
         requested_at: Date;
         endpoint: string;

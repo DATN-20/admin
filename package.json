@@ -22,7 +22,8 @@
     "react-router-dom": "^6.23.0",
     "react-toastify": "^10.0.4",
     "recharts": "^2.12.7",
-    "redux": "^5.0.1"
+    "redux": "^5.0.1",
+    "sharp": "^0.33.4"
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.6",

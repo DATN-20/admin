@@ -1,83 +1,62 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Table } from "antd";
+import { Select, Table } from "antd";
 import { ColumnType } from "antd/es/table";
-
-interface LogEntry {
-  user_id: number;
-  requested_at: string;
-  endpoint: string;
-  severity: string;
-  message: string;
-  file: string;
-}
-
-const dataFromApi = {
-  total: 34,
-  page: 1,
-  limit: 6,
-  data: [
-    {
-      user_id: 3,
-      requested_at: "2024-05-07T15:39:04.815Z",
-      endpoint: "/generate-image/text-to-image",
-      severity: "info",
-      message: "Text To Image",
-      file: "logs-2024.05.07",
-    },
-    {
-      user_id: 3,
-      requested_at: "2024-05-07T15:39:06.822Z",
-      endpoint: "/generate-image/text-to-image",
-      severity: "info",
-      message: "Text To Image",
-      file: "logs-2024.05.07",
-    },
-    {
-      user_id: 2,
-      requested_at: "2024-05-07T15:00:54.423Z",
-      endpoint: "/management/users",
-      severity: "info",
-      message: "access to api",
-      file: "logs-2024.05.07",
-    },
-    {
-      user_id: 2,
-      requested_at: "2024-05-07T15:01:09.113Z",
-      endpoint: "/management/users",
-      severity: "info",
-      message: "access to api",
-      file: "logs-2024.05.07",
-    },
-    {
-      user_id: 2,
-      requested_at: "2024-05-07T15:01:20.093Z",
-      endpoint: "/abc",
-      severity: "info",
-      message: "access to api",
-      file: "logs-2024.05.07",
-    },
-    {
-      user_id: 1,
-      requested_at: "2024-05-07T14:31:05.211Z",
-      endpoint: "/management/users",
-      severity: "info",
-      message: "access to api",
-      file: "logs-2024.05.07",
-    },
-  ],
-};
+import { LogMonitoring } from "@/types/LogMonitoring";
+import axios from "axios";
 
 function LogsTable() {
-  const [dataSource, setDataSource] = useState<LogEntry[]>([]);
+  const [dataSource, setDataSource] = useState<LogMonitoring.ApiLogJson[]>([]);
+  
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
+  const [startDate, setStartDate] = useState<Date>((() => {
+    const date = new Date();
+    date.setMonth(date.getMonth() - 3);
+    return date;
+  })());
+  const [endDate, setEndDate] = useState<Date>(new Date());
+  const [endpointIndex, setEndpointIndex] = useState<number>(0);
+  const endpoints = [
+    {
+        endpoint: "/generate-image/image-to-image", displayText: "Image to Image"
+    },
+    {
+        endpoint: "/generate-image/text-to-image", displayText: "Text to Image"
+    },
+    {
+        endpoint: "/generate-image/image-by-images-style", displayText: "Generate with Style"
+    },
+  ];
+  
+  const fetchDataWithAxios = async () => {
+    try {
+      const baseQuery = process.env.NEXT_PUBLIC_API_URL;
+      const response = await axios.get(baseQuery + 'api/v1/admin/management/logging/api', {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        params: {
+          endpoint: endpoints[endpointIndex].endpoint,
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString(),
+          limit: pagination.pageSize,
+          page: pagination.current
+        }
+      });
+      setDataSource(response.data.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      
+    }
+  };
 
   useEffect(() => {
-    // Fetch data from API and set it to state
-    setDataSource(dataFromApi.data);
-  }, []);
+    fetchDataWithAxios();
+  }, [endpointIndex, startDate, endDate]);
 
-  const columns: ColumnType<LogEntry>[] = [
+  const columns: ColumnType<LogMonitoring.ApiLogJson>[] = [
     {
       key: "user_id",
       title: "User ID",
@@ -115,7 +94,36 @@ function LogsTable() {
     <div className="App p-12">
       <header className="App-header">
         <div className="mb-10 font-bold text-3xl">Logs Monitoring</div>
-        <Table columns={columns} dataSource={dataSource} rowKey="user_id" />
+        <div className="flex items-center ms-5 mb-3">
+        <span>Select Endpoint:</span>
+        <Select
+        className="border-2 rounded-lg border-black p-2 focus:border-black"
+          value={endpoints[endpointIndex].endpoint}
+          onChange={(value) => {
+            setEndpointIndex(
+              endpoints.findIndex((ep) => ep.endpoint === value)
+            );
+          }}
+          style={{ margin: 16, width: 200 }}
+        >
+          {endpoints.map((ep) => (
+            <Select.Option key={ep.endpoint} value={ep.endpoint}>
+              {ep.displayText}
+            </Select.Option>
+          ))}
+        </Select>
+      </div>
+        <Table columns={columns} dataSource={dataSource} rowKey="user_id"
+        pagination={{
+          ...pagination,
+          total: dataSource.length || 0,
+          showSizeChanger: true,
+          showQuickJumper: true,
+          onChange: (page, pageSize) =>
+            setPagination({ current: page, pageSize }),
+          onShowSizeChange: (current, size) =>
+            setPagination({ current, pageSize: size }),
+        }} />
       </header>
     </div>
   );
