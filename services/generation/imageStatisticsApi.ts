@@ -5,9 +5,7 @@ import customBaseQuery from "../customBaseQuery"
 
 export const imageStatisticsApi = createApi({
   reducerPath: "imageStatisticsApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_API_URL,
-  }),
+  baseQuery: customBaseQuery,
   endpoints: (builder) => ({
     getImageStatistics: builder.query<ImageStatistics.ImageStatisticsResponse, ImageStatistics.ImageStatisticsRequest>({
         query: ({ startDate, endDate, style, aiName, imageType }) => {

@@ -6,9 +6,7 @@ import customBaseQuery from "../customBaseQuery"
 
 export const logMonitoringApi = createApi({
   reducerPath: "logMonitoringApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_API_URL,
-  }),
+  baseQuery: customBaseQuery,
   endpoints: (builder) => ({
     getLoggingApi: builder.query<LogMonitoring.GetApiLoggingResponse, LogMonitoring.GetApiLoggingRequest>({
       query: ({ limit, page, startDate, endDate, endpoint }) => {
