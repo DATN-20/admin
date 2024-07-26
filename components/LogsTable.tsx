@@ -48,7 +48,7 @@ function LogsTable() {
         setDataSource(response.data.data);
       
       setPagination({
-        ...pagination,
+        pageSize: pagination.pageSize,
         current: 1
       });
     

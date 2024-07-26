@@ -145,7 +145,7 @@ function GenerationsTable() {
   return (
     <div className="App p-12">
       <header className="App-header">
-        <div className="mb-10 font-bold text-3xl">Logs Monitoring</div>
+        <div className="mb-10 font-bold text-3xl">Generations</div>
         <div>
           <span>Select style:</span>
           <Select
@@ -168,7 +168,7 @@ function GenerationsTable() {
               className="border-2 rounded-lg border-black p-2 focus:border-black"
               value={aiNames[aiIndex].name}
               onChange={(value) => {
-                setStyleIndex(aiNames.findIndex((ep) => ep.name === value));
+                setAiIndex(aiNames.findIndex((ep) => ep.name === value));
               }}
               style={{ margin: 16, width: 200 }}
             >
@@ -185,7 +185,7 @@ function GenerationsTable() {
               className="border-2 rounded-lg border-black p-2 focus:border-black"
               value={imageFilterTypes[imageFilterIndex].type}
               onChange={(value) => {
-                setStyleIndex(
+                setImageFilterIndex(
                   imageFilterTypes.findIndex((ep) => ep.type === value)
                 );
               }}
@@ -217,7 +217,7 @@ function GenerationsTable() {
               style={{ margin: 16 }}
             />
           </div>
-          <div>Endpoint: {endpoint}</div>
+          {endpoint && <div>Endpoint: {endpoint}</div>}
         </div>
         <Table
           columns={columns}
