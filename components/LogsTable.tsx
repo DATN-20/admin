@@ -3,75 +3,35 @@
 import React, { useEffect, useState } from "react";
 import { Table } from "antd";
 import { ColumnType } from "antd/es/table";
-
-interface LogEntry {
-  user_id: number;
-  requested_at: string;
-  endpoint: string;
-  severity: string;
-  message: string;
-  file: string;
-}
-
-const dataFromApi = {
-  total: 34,
-  page: 1,
-  limit: 6,
-  data: [
-    {
-      user_id: 3,
-      requested_at: "2024-05-07T15:39:04.815Z",
-      endpoint: "/generate-image/text-to-image",
-      severity: "info",
-      message: "Text To Image",
-      file: "logs-2024.05.07",
-    },
-    {
-      user_id: 3,
-      requested_at: "2024-05-07T15:39:06.822Z",
-      endpoint: "/generate-image/text-to-image",
-      severity: "info",
-      message: "Text To Image",
-      file: "logs-2024.05.07",
-    },
-    {
-      user_id: 2,
-      requested_at: "2024-05-07T15:00:54.423Z",
-      endpoint: "/management/users",
-      severity: "info",
-      message: "access to api",
-      file: "logs-2024.05.07",
-    },
-    {
-      user_id: 2,
-      requested_at: "2024-05-07T15:01:09.113Z",
-      endpoint: "/management/users",
-      severity: "info",
-      message: "access to api",
-      file: "logs-2024.05.07",
-    },
-    {
-      user_id: 2,
-      requested_at: "2024-05-07T15:01:20.093Z",
-      endpoint: "/abc",
-      severity: "info",
-      message: "access to api",
-      file: "logs-2024.05.07",
-    },
-    {
-      user_id: 1,
-      requested_at: "2024-05-07T14:31:05.211Z",
-      endpoint: "/management/users",
-      severity: "info",
-      message: "access to api",
-      file: "logs-2024.05.07",
-    },
-  ],
-};
+import { LogMonitoring } from "@/types/LogMonitoring";
+import { useGetLoggingApiQuery } from "@/services/log-monitoring/logMonitoringApi";
 
 function LogsTable() {
-  const [dataSource, setDataSource] = useState<LogEntry[]>([]);
-
+  const [dataSource, setDataSource] = useState<LogMonitoring.ApiLogJson[]>([]);
+  const [limit, setLimit] = useState<number>(6);
+  const [page, setPage] = useState<number>(1);
+  const [startDate, setStartDate] = useState<Date>(new Date());
+  const [endDate, setEndDate] = useState<Date>(new Date());
+  const [endpoint, setEndpoint] = useState<string>("/generate-image/text-to-image");
+  const endpoints = [
+    {
+        endpoint: "/generate-image/image-to-image", displayText: "Image to Image"
+    },
+    {
+        endpoint: "/generate-image/text-to-image", displayText: "Text to Image"
+    },
+    {
+        endpoint: "/generate-image/image-by-images-style", displayText: "Generate with Style"
+    },
+  ];
+  const { data: dataFromApi } = useGetLoggingApiQuery({
+    limit: limit,
+    page: page,
+    startDate: startDate,
+    endDate: endDate,
+    endpoint: AcceptanceEndpoint.TEXT_TO_IMAGE
+  });
+  
   useEffect(() => {
     // Fetch data from API and set it to state
     setDataSource(dataFromApi.data);
