@@ -110,15 +110,14 @@ function GenerationsTable() {
             imageType: imageFilterTypes[imageFilterIndex].type,
           },
         }
-      )) as ImageStatistics.ImageStatisticsResponse;
-      if (Array.isArray(response.data)) {
-        setEndpoint(response?.endpoint);
-        setDataSource(response.data);
+      ));
+        setEndpoint(response?.data.endpoint);
+        setDataSource(response.data.data);
         setPagination({
           ...pagination,
           current: 1,
         });
-      }
+      
     } catch (err) {
       console.error(err);
     } finally {
