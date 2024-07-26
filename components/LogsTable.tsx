@@ -43,8 +43,16 @@ function LogsTable() {
           limit: pagination.pageSize,
           page: pagination.current
         }
+      }) as LogMonitoring.GetApiLoggingResponse;
+      if (Array.isArray(response.data)) {
+        setDataSource(response.data);
+      
+      setPagination({
+        ...pagination,
+        current: 1
       });
-      setDataSource(response.data.data);
+    }
+        
     } catch (err) {
       console.error(err);
     } finally {
@@ -112,6 +120,24 @@ function LogsTable() {
             </Select.Option>
           ))}
         </Select>
+        <div className="flex items-center ms-5 mb-3">
+        <span className="me-10">Start Date:</span>
+        <input
+        className="border-2 rounded-lg border-black p-2"
+          type="date"
+          value={startDate.toISOString().split("T")[0]}
+          onChange={(e) => setStartDate(new Date(e.target.value))}
+          style={{ margin: 16 }}
+        />
+        <span className="ms-10">End Date:</span>
+        <input
+        className="border-2 rounded-lg border-black p-2"
+          type="date"
+          value={endDate.toISOString().split("T")[0]}
+          onChange={(e) => setEndDate(new Date(e.target.value))}
+          style={{ margin: 16 }}
+        />
+      </div>
       </div>
         <Table columns={columns} dataSource={dataSource} rowKey="user_id"
         pagination={{
