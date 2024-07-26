@@ -28,7 +28,7 @@ runs:
         key: ${{ inputs.ssh-private-key }}
         port: ${{ inputs.ssh-port }}
         script: |
-          cd /artist_project/admin
+          cd /artist_project/admin_front_end
           docker stop adminartists || true
           docker rm adminartists || true
           docker rmi nightcrawlers512/adminartists || true

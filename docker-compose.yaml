@@ -4,9 +4,6 @@ services:
   admin:
     container_name: adminartists
     image: nightcrawlers512/adminartists:latest
-    build:
-      context: .
-      dockerfile: Dockerfile
     env_file:
       - .docker.env
     ports:
