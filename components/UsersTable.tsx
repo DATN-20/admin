@@ -125,6 +125,8 @@ function UsersTable() {
               className="hover:text-blue-500 cursor-pointer"
               onClick={() => {
                 router.push(`/users/${record.user.id}`);
+                localStorage.setItem("firstName", record.user.first_name);
+                localStorage.setItem("lastName", record.user.last_name);
               }}
             />
             {!record.locked_information ? (

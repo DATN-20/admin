@@ -38,6 +38,9 @@ const UserChart: React.FC<UserChartProps> = ({ chartData }) => {
         scales: {
           y: {
             beginAtZero: true,
+            ticks: {
+              stepSize: 1,
+            },
           },
         },
       },

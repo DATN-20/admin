@@ -1,18 +1,22 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Table } from "antd";
+import { Select, Table } from "antd";
 import { ColumnType } from "antd/es/table";
 import { LogMonitoring } from "@/types/LogMonitoring";
-import { useGetLoggingApiQuery } from "@/services/log-monitoring/logMonitoringApi";
+import axios from "axios";
 
 function LogsTable() {
   const [dataSource, setDataSource] = useState<LogMonitoring.ApiLogJson[]>([]);
-  const [limit, setLimit] = useState<number>(6);
-  const [page, setPage] = useState<number>(1);
-  const [startDate, setStartDate] = useState<Date>(new Date());
+  
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
+  const [startDate, setStartDate] = useState<Date>((() => {
+    const date = new Date();
+    date.setMonth(date.getMonth() - 3);
+    return date;
+  })());
   const [endDate, setEndDate] = useState<Date>(new Date());
-  const [endpoint, setEndpoint] = useState<string>("/generate-image/text-to-image");
+  const [endpointIndex, setEndpointIndex] = useState<number>(0);
   const endpoints = [
     {
         endpoint: "/generate-image/image-to-image", displayText: "Image to Image"
@@ -24,20 +28,35 @@ function LogsTable() {
         endpoint: "/generate-image/image-by-images-style", displayText: "Generate with Style"
     },
   ];
-  const { data: dataFromApi } = useGetLoggingApiQuery({
-    limit: limit,
-    page: page,
-    startDate: startDate,
-    endDate: endDate,
-    endpoint: AcceptanceEndpoint.TEXT_TO_IMAGE
-  });
   
-  useEffect(() => {
-    // Fetch data from API and set it to state
-    setDataSource(dataFromApi.data);
-  }, []);
+  const fetchDataWithAxios = async () => {
+    try {
+      const baseQuery = process.env.NEXT_PUBLIC_API_URL;
+      const response = await axios.get(baseQuery + 'api/v1/admin/management/logging/api', {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        params: {
+          endpoint: endpoints[endpointIndex].endpoint,
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString(),
+          limit: pagination.pageSize,
+          page: pagination.current
+        }
+      });
+      setDataSource(response.data.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      
+    }
+  };
 
-  const columns: ColumnType<LogEntry>[] = [
+  useEffect(() => {
+    fetchDataWithAxios();
+  }, [endpointIndex, startDate, endDate]);
+
+  const columns: ColumnType<LogMonitoring.ApiLogJson>[] = [
     {
       key: "user_id",
       title: "User ID",
@@ -75,7 +94,36 @@ function LogsTable() {
     <div className="App p-12">
       <header className="App-header">
         <div className="mb-10 font-bold text-3xl">Logs Monitoring</div>
-        <Table columns={columns} dataSource={dataSource} rowKey="user_id" />
+        <div className="flex items-center ms-5 mb-3">
+        <span>Select Endpoint:</span>
+        <Select
+        className="border-2 rounded-lg border-black p-2 focus:border-black"
+          value={endpoints[endpointIndex].endpoint}
+          onChange={(value) => {
+            setEndpointIndex(
+              endpoints.findIndex((ep) => ep.endpoint === value)
+            );
+          }}
+          style={{ margin: 16, width: 200 }}
+        >
+          {endpoints.map((ep) => (
+            <Select.Option key={ep.endpoint} value={ep.endpoint}>
+              {ep.displayText}
+            </Select.Option>
+          ))}
+        </Select>
+      </div>
+        <Table columns={columns} dataSource={dataSource} rowKey="user_id"
+        pagination={{
+          ...pagination,
+          total: dataSource.length || 0,
+          showSizeChanger: true,
+          showQuickJumper: true,
+          onChange: (page, pageSize) =>
+            setPagination({ current: page, pageSize }),
+          onShowSizeChange: (current, size) =>
+            setPagination({ current, pageSize: size }),
+        }} />
       </header>
     </div>
   );
