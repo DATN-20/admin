@@ -248,7 +248,7 @@ const Home = () => {
                   <input
                     className="border-2 rounded-lg border-black p-2"
                     type="date"
-                    value={startNewUserDate.toISOString().split("T")[0]}
+                    value={startStatisticsDate.toISOString().split("T")[0]}
                     onChange={(e) =>
                       setStartStatisticsDate(new Date(e.target.value))
                     }
@@ -258,7 +258,7 @@ const Home = () => {
                   <input
                     className="border-2 rounded-lg border-black p-2"
                     type="date"
-                    value={endNewUserDate.toISOString().split("T")[0]}
+                    value={endStatisticsDate.toISOString().split("T")[0]}
                     onChange={(e) =>
                       setEndStatisticsDate(new Date(e.target.value))
                     }
