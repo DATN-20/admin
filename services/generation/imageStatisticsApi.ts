@@ -1,11 +1,13 @@
 import { ImageFilterType } from "@/constants/ImageFilterType"
 import { ImageStatistics } from "@/types/ImageStatistics"
-import { createApi } from "@reduxjs/toolkit/query/react"
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
 import customBaseQuery from "../customBaseQuery"
 
 export const imageStatisticsApi = createApi({
   reducerPath: "imageStatisticsApi",
-  baseQuery: customBaseQuery,
+  baseQuery: fetchBaseQuery({
+    baseUrl: process.env.NEXT_PUBLIC_API_URL,
+  }),
   endpoints: (builder) => ({
     getImageStatistics: builder.query<ImageStatistics.ImageStatisticsResponse, ImageStatistics.ImageStatisticsRequest>({
         query: ({ startDate, endDate, style, aiName, imageType }) => {

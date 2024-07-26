@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { LoginResponse } from "@/types/LoginResponse";
 import jwt from "jsonwebtoken";
 import { DecodedToken } from "@/components/Sidebar";
+import Image from "next/image";
 
 type FieldType = {
   email?: string;
@@ -80,14 +81,14 @@ const Page: React.FC = () => {
     if (token) {
       router.push("/home");
     }
-  }, []);
+  }, [router]);
 
   return (
     <ConfigProvider theme={{ cssVar: true }}>
       <div className="login-page bg-blue-100 min-h-screen flex justify-center items-center">
         <div className="login-box flex justify-between items-center flex-row-reverse  bg-white shadow-lg overflow-hidden rounded-lg mx-auto">
           <div className="illustration-wrapper flex items-end max-w-lg min-h-full bg-yellow-100">
-            <img
+            <Image
               src="https://mixkit.imgix.net/art/preview/mixkit-left-handed-man-sitting-at-a-table-writing-in-a-notebook-27-original-large.png?q=80&auto=format%2Ccompress&h=700"
               alt="Login"
             />

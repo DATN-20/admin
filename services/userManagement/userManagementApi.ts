@@ -4,7 +4,9 @@ import customBaseQuery from "../customBaseQuery"
 
 export const userManagementApi = createApi({
   reducerPath: "userManagementApi",
-  baseQuery: customBaseQuery,
+  baseQuery: fetchBaseQuery({
+    baseUrl: process.env.NEXT_PUBLIC_API_URL,
+  }),
   endpoints: (builder) => ({
     getUsers: builder.query<UserManagement.GetUsersResponse, UserManagement.GetUsersRequest>({
       query: ({ limit, page }) => {

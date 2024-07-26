@@ -63,7 +63,7 @@ const UserRequestTable = ({ userId }: { userId: string }) => {
     if (!isLoading && requestTimeout) {
       setRequestTimeout(false);
     }
-  }, [isLoading]);
+  }, [isLoading, requestTimeout]);
 
   const columns = [
     {

@@ -26,7 +26,7 @@ const UserDetailPage = ({params}:
         setLoading(false);
       }
     }
-  }, [users, id, isLoading]);
+  }, [users, id, isLoading, router]);
 
   if (loading) {
     return (
