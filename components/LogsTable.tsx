@@ -43,15 +43,15 @@ function LogsTable() {
           limit: pagination.pageSize,
           page: pagination.current
         }
-      }) as LogMonitoring.GetApiLoggingResponse;
-      if (Array.isArray(response.data)) {
-        setDataSource(response.data);
+      });
+      
+        setDataSource(response.data.data);
       
       setPagination({
         ...pagination,
         current: 1
       });
-    }
+    
         
     } catch (err) {
       console.error(err);
